@@ -1,25 +1,51 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react";
 
-function App() {
+export default function App() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch(`https://dummyjson.com/products`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `This is an HTTP error: The status is ${response.status}`
+          );
+        }
+        return response.json();
+      })
+      .then((actualData) => {
+        setData(actualData.products);
+        console.log(actualData.products);
+        setError(null);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setData(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Rechercher</h1>
+      <input type="text" placeholder="Produit" onChange></input>
+      {loading && <div>Veuillez patienter...</div>}
+      {error && (
+        <div>{`There is a problem fetching the post data - ${error}`}</div>
+      )}
+      <ul>
+        {data &&
+          data.map(({ id, title, images }) => (
+            <li key={id}>
+              <p>{title}</p>
+              <img src={images[0]} alt="produit"/>
+            </li>
+          ))}
+      </ul>
     </div>
   );
 }
-
-export default App;
